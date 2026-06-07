@@ -1,0 +1,14 @@
+# Parts List
+- 1x KF16 Vacuum Flow Regulating Valve Metering Controller Needle Valve
+- 1x NEMA 17 Stepper Motor
+- 1x TB6600 Driver
+- 1x XIAO ESP32C6 Microcontroller
+- 1x Power Supply (12V/3A)
+- 1x 5mm to 6mm Shaft Coupler
+- 1x 30mm Inner-width Square U-bolt
+- 1x 42mm Stepper Motor Mounting Bracket
+- 100x65mm Aluminum Sheet
+- 1x Perfboard
+- 11x wires
+- 1x 3 Double-A Battery Holder
+- 3x Double-A Batteries

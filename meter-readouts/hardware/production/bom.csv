@@ -1,0 +1,8 @@
+﻿Designator,Footprint,Quantity,Value,LCSC Part #
+"C1, C2, C3, C4",0805,4,100 nF,
+C5,0805,1,10 uF,
+"D1, D2, D3, D4, D5",D_SOD-123,5,D_Schottky,
+"R1, R2, R4, R5",0805,4,47 kOhm,
+R3,0805,1,1 kOhm,
+"R7, R8",0805,2,4.7 kOhm,
+U1,TSSOP-10_3x3mm_P0.5mm,1,ADS1115IDGS,
