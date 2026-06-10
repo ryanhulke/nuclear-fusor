@@ -1,6 +1,8 @@
 # Nuclear Fusor
+A [nuclear fusor](https://en.wikipedia.org/wiki/Fusor) is a inertial electrostatic confinement device that uses a strong electric field to ionize deuterium gas and accelerate the resulting ions toward the center of a vacuum chamber. This is typically accomplished by applying a large negative voltage to an inner metal grid (the cathode) relative to the grounded chamber wall (the anode). The chamber is operated at low pressure so that ions can travel significant distances and gain energy from the electric field before colliding with other particles. Near the center of the device, some ions collide with enough kinetic energy that, although they still cannot classically overcome the strong [Coulomb repulsion force](https://en.wikipedia.org/wiki/Coulomb's_law) between their positively charged nuclei, they can occasionally [tunnel](https://en.wikipedia.org/wiki/Quantum_tunnelling) through the Coulomb barrier and fuse, releasing energy and producing fusion products such as neutrons. These devices are purely experimental; they are highly energy-inefficient and have no commercial future. If you have to ask "then why would I build one?", you probably shouldn't.
 
-Hardware, firmware, and desktop software for the fusor. The repo is organized around small BLE-connected boards that publish measurements or accept actuator commands, plus a desktop app control panel that brings the live readouts and valve controls together, with option to stream your phone camera to your computer so you can view the plasma at a safe distance. You can also replay recorded sensor logs and camera footage in the control panel for post-run analysis, in either standard or mobile view.
+## Project Description
+Hardware, firmware, and desktop software for the fusor. The build employs 3 microcontrollers with Bluetooth Low-Energy (BLE). One is connected to the pressure gauge to send the pressure to the control panel, one takes in wires to read out and send the voltage and current, and the last mediates actuator commands to turn the valve remotely, so we can moderate the pressure in the chamber. The desktop app control panel brings the live readouts and valve controls together, with option to stream your phone camera to your computer so you can view the plasma at a safe distance. You can also replay recorded sensor logs and camera footage in the control panel for post-run analysis, in either standard or mobile view.
 
 <img src="docs/img/plasma.jpg" alt="Control Panel: Mobile View" height="600">
 
@@ -14,9 +16,9 @@ Hardware, firmware, and desktop software for the fusor. The repo is organized ar
 - a variable power supply capable of at least -20kV at a few mA
 - deuterium gas source (or just air for testing)
 - MKS 901P pressure gauge
-- pressure gauge readout board ([pressure-gauge-readout\hardware](pressure-gauge-readout\hardware))
+- pressure gauge readout board ([pressure-gauge-readout\hardware](pressure-gauge-readout/hardware))
 -  remote-controlled valve ([valve-control/Parts.md](valve-control/Parts.md))
-- ammeter/voltmeter readout board ([meter-readouts\hardware](meter-readouts\hardware))
+- ammeter/voltmeter readout board ([meter-readouts\hardware](meter-readouts/hardware))
 
 ## Repository Layout
 
