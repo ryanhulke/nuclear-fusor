@@ -2,138 +2,85 @@
 
 Native OpenGL control panel for the fusor viewport, pressure gauge, meter readouts, valve control, sensor logging, camera background, and playback.
 
-## Requirements
+This guide takes you from nothing to a running app in five steps. Run every command in **PowerShell from the repo root**. You install the build tools once (steps 1–3), build once (step 4), and from then on you only repeat step 5 to run.
 
-- Windows 10 or newer
-- Git
-- CMake `3.21` or newer
-- Visual Studio 2022 Build Tools with the **Desktop development with C++** workload
-- OpenCV Windows prebuilt package
-- MediaMTX and Moblin on iPhone for the optional SRT camera feed
+> **The OpenCV root.** Everything OpenCV-related is derived from one folder — the directory you extract OpenCV into. This guide calls it `$OpenCVRoot`. Set it once and the build and run steps reuse it, so you never hand-type the long paths twice.
 
-Verify the basic tools from PowerShell:
+## Step 1 — Visual Studio 2022 Build Tools (C++ compiler)
 
-```powershell
-git --version
-cmake --version
-```
+This provides the MSVC C++ compiler that CMake uses to build the app. Without it, the build fails with "no compiler found."
 
-The first configure downloads GLFW and SimpleBLE through CMake `FetchContent`,
-so it needs internet access. GLAD is vendored in `tools/glad`.
+1. Download the **Build Tools for Visual Studio 2022** from https://visualstudio.microsoft.com/downloads/ (scroll to "Tools for Visual Studio").
+2. Run the installer and check the **Desktop development with C++** workload, then install.
+3. If you already have Visual Studio Community/Professional with the C++ workload, you can skip this.
 
-## Install Build Tools
+## Step 2 — CMake 3.21 or newer
 
-Install Visual Studio 2022 Build Tools from Microsoft and select:
+1. Install from https://cmake.org/download/ (choose "Add CMake to the system PATH" during install).
+2. Confirm it is available:
+   ```powershell
+   cmake --version
+   ```
 
-```text
-Desktop development with C++
-```
+## Step 3 — OpenCV
 
-That workload installs the MSVC compiler, Windows SDK, and MSBuild. If CMake
-later reports that no compiler was found, rerun the Visual Studio installer and
-confirm this workload is installed.
+The control panel links against OpenCV at build time and loads its DLLs at run time. CMake does **not** download OpenCV for you, so install it yourself.
 
-Install CMake `3.21` or newer and make sure it is available in PowerShell:
+1. Download the prebuilt Windows package (`opencv-4.x.x-windows.exe`) from https://github.com/opencv/opencv/releases/latest.
+2. Run it — it is a self-extractor — and extract to a folder you will remember, for example `C:\Libraries\opencv`. **That folder is your `$OpenCVRoot`.**
+3. Confirm the extract produced an `OpenCVConfig.cmake` and a `bin` folder under it:
+   ```powershell
+   $OpenCVRoot = "C:\Libraries\opencv"   # the folder you extracted into
+   Get-ChildItem $OpenCVRoot -Recurse -Filter OpenCVConfig.cmake | Select-Object FullName
+   Get-ChildItem $OpenCVRoot -Recurse -Filter opencv_world*.dll | Select-Object FullName
+   ```
+   For the prebuilt package these resolve to `$OpenCVRoot\build` (the config) and `$OpenCVRoot\build\x64\vc16\bin` (the DLLs). If you built OpenCV from source instead, point `$OpenCVRoot` at your install folder; the two subpaths may differ (e.g. `...\x64\vc16\lib` and `...\x64\vc16\bin`) — use whatever the commands above print.
 
-```powershell
-cmake --version
-```
+## Step 4 — Build the app
 
-## Install OpenCV
-
-The control panel links against OpenCV through CMake's `find_package(OpenCV)`.
-OpenCV can live anywhere on your machine as long as you tell CMake where its
-`OpenCVConfig.cmake` file is.
-
-### Option A: Official Prebuilt Windows Package
-
-Download the Windows package from the official OpenCV releases page:
-
-```text
-https://github.com/opencv/opencv/releases/latest
-```
-
-Download the asset named like:
-
-```text
-opencv-4.x.x-windows.exe
-```
-
-Run the installer/extractor and choose any install directory. For example:
-
-```text
-D:\Libraries\opencv
-```
-
-Find the CMake package config:
+This compiles the control panel once. You only repeat it after changing the source.
 
 ```powershell
-$OpenCVRoot = "D:\Libraries\opencv"
-Get-ChildItem $OpenCVRoot -Recurse -Filter OpenCVConfig.cmake | Select-Object FullName
-```
-
-Use the folder that directly contains `OpenCVConfig.cmake` as `OpenCV_DIR`.
-Common results from the prebuilt package look like:
-
-```text
-D:\Libraries\opencv\build
-D:\Libraries\opencv\build\x64\vc16\lib
-```
-
-If both are present, start with the shorter `...\build` path.
-
-### Option B: Your Own OpenCV Build
-
-If you build OpenCV from source, install it with CMake and use the installed
-CMake package directory as `OpenCV_DIR`. For example, if your install contains:
-
-```text
-D:\Libraries\opencv-install\x64\vc16\lib\OpenCVConfig.cmake
-```
-
-then configure this project with:
-
-```powershell
-$OpenCV_DIR = "D:\Libraries\opencv-install\x64\vc16\lib"
-```
-
-## Build
-
-From the repo root:
-
-```powershell
-$OpenCV_DIR = "D:\Libraries\opencv\build"
-cmake -S control-panel -B control-panel\build -DOpenCV_DIR="$OpenCV_DIR"
+$OpenCVRoot = "C:\Libraries\opencv"   # same folder as step 3
+cmake -S control-panel -B control-panel\build -DOpenCV_DIR="$OpenCVRoot\build"
 cmake --build control-panel\build --config Release
 ```
 
-If you need a clean CMake reconfigure, delete only the generated build folder
-and run the same configure command again:
+The first configure also downloads GLFW and SimpleBLE via CMake `FetchContent`, so it needs internet access. GLAD is vendored in `tools/glad`.
+
+To start clean, delete the build folder and re-run the two commands above:
 
 ```powershell
 Remove-Item control-panel\build -Recurse -Force
-cmake -S control-panel -B control-panel\build -DOpenCV_DIR="$OpenCV_DIR"
 ```
 
-Before running the app, add the matching OpenCV DLL folder to the current
-PowerShell session. For the official prebuilt package this is usually under
-`build\x64\vc16\bin`:
+## Step 5 — Run the app
+
+⚠️ **Before launching, add OpenCV's DLL folder to your PATH for this PowerShell session.** This is the step people miss: without it Windows cannot find the OpenCV DLLs and the app fails to start with a missing-DLL error. You must redo this in every new PowerShell window.
 
 ```powershell
-$OpenCV_BIN = "D:\Libraries\opencv\build\x64\vc16\bin"
-$env:PATH = "$OpenCV_BIN;$env:PATH"
-```
-
-## Run Without Camera
-
-```powershell
+$OpenCVRoot = "C:\Libraries\opencv"   # same folder as step 3
+$env:PATH = "$OpenCVRoot\build\x64\vc16\bin;$env:PATH"
 & "control-panel\build\Release\Fusor Control Panel.exe"
 ```
 
-The app scans for the pressure sensor, meter readout, and valve control boards automatically.
+The app scans for the pressure sensor, meter readout, and valve control boards automatically. If it still reports missing DLLs, you ran the `.exe` in a different PowerShell window than the `$env:PATH` line — run both in the same window.
 
-If Windows cannot find OpenCV DLLs at startup, confirm the `PATH` command above
-was run in the same PowerShell session used to launch the executable.
+## Setup at a glance
+
+After the one-time tool installs (steps 1–3), the full build-and-run sequence is:
+
+```powershell
+$OpenCVRoot = "C:\Libraries\opencv"   # adjust to where you extracted OpenCV
+
+# Build (repeat only after source changes)
+cmake -S control-panel -B control-panel\build -DOpenCV_DIR="$OpenCVRoot\build"
+cmake --build control-panel\build --config Release
+
+# Run (repeat every new PowerShell session)
+$env:PATH = "$OpenCVRoot\build\x64\vc16\bin;$env:PATH"
+& "control-panel\build\Release\Fusor Control Panel.exe"
+```
 
 ## Configure Camera URL
 
@@ -237,11 +184,11 @@ Keyframe interval: 1 second
 
 ### 4. Run With Camera
 
-From the repo root:
+With MediaMTX running and Moblin streaming, launch the app exactly as in step 5 (the camera is picked up automatically from `config.yaml`):
 
 ```powershell
-$OpenCV_BIN = "D:\Libraries\opencv\build\x64\vc16\bin"
-$env:PATH = "$OpenCV_BIN;$env:PATH"
+$OpenCVRoot = "C:\Libraries\opencv"   # same folder as setup
+$env:PATH = "$OpenCVRoot\build\x64\vc16\bin;$env:PATH"
 & "control-panel\build\Release\Fusor Control Panel.exe"
 ```
 

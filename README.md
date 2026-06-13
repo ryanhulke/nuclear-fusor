@@ -19,6 +19,10 @@ Hardware, firmware, and desktop software for the fusor. The build employs 3 micr
 - pressure gauge readout board ([pressure-gauge-readout\hardware](pressure-gauge-readout/hardware))
 -  remote-controlled valve ([valve-control/Parts.md](valve-control/Parts.md))
 - ammeter/voltmeter readout board ([meter-readouts\hardware](meter-readouts/hardware))
+- NEMA 17 Stepper motor (mounted to a needle valve on the deuterium inlet side) and driver
+- (optional) ESP32-C6 microcontroller to control the motor
+  - a more efficient design would be to incorporate valve control into the meter readout board's PCB
+
 
 ## Repository Layout
 
@@ -32,81 +36,42 @@ Hardware, firmware, and desktop software for the fusor. The build employs 3 micr
 
 Generated build outputs, local logs, camera media, reference papers, IDE state, and local tool installs are intentionally ignored.
 
-## First-Time Setup
+## Getting Started
+First, check out the hardware and parts lists to make sure you have what you need. Then, set up the software toolchain(s) for the components you want to build.
 
-This repo has two toolchains:
+| What | Toolchain | Where to start |
+| --- | --- | --- |
+| **Control panel** — the Windows desktop app | CMake + Visual Studio C++ build tools + OpenCV | [control-panel/README.md](control-panel/README.md) |
+| **Firmware** — the three microcontroller boards | PlatformIO | [Firmware](#firmware) below |
 
-- The Windows control panel uses CMake and the Visual Studio C++ build tools.
-- The embedded firmware uses PlatformIO.
+Everything below assumes **PowerShell, run from the repo root**. Both toolchains need:
 
-Use PowerShell from the repo root for the commands below.
-
-### Install Control Panel Tools
-
-Required:
-
-- Windows 10 or newer.
-- Git, available as `git`.
-- CMake `3.21` or newer, available as `cmake`.
-- Visual Studio 2022 Build Tools with the **Desktop development with C++** workload.
-- OpenCV for Windows, either the official prebuilt package or your own CMake install.
-
-Verify the command-line tools:
-
-```powershell
-git --version
-cmake --version
-```
-
-If CMake cannot find a compiler, install or repair Visual Studio Build Tools and
-make sure the C++ workload is selected. The first CMake configure also downloads
-GLFW and SimpleBLE through CMake `FetchContent`, so it needs internet access.
-
-OpenCV is not downloaded by this project's CMake configure step. See
-`control-panel/README.md` for download links and the `OpenCV_DIR` setup flow.
-
-### Install Firmware Tools
-
-Required:
-
-- Python 3
-- PlatformIO Core
-- USB driver support for the Seeed XIAO boards on your machine
-
-Install PlatformIO Core with Python:
-
-```powershell
-pip install platformio
-pio --version
-```
-
-The VS Code PlatformIO extension also works, but the documented commands use
-PlatformIO Core so they can be run from any terminal.
-
-## Quick Start
+- Windows 10 or newer
+- Git (`git --version` to confirm)
 
 ### Control Panel
 
-The control panel is a CMake project that builds a Windows desktop app:
+The control panel is a native OpenGL desktop app for the live readouts, valve control, camera, sensor logging, and playback. Its setup has a few steps that are easy to get wrong (installing the C++ build tools, pointing CMake at OpenCV, and adding OpenCV's DLLs to `PATH` before running), so it is documented in one place rather than split across files:
 
-```powershell
-$OpenCV_DIR = "<path-to-folder-containing-OpenCVConfig.cmake>"
-cmake -S control-panel -B control-panel\build -DOpenCV_DIR="$OpenCV_DIR"
-cmake --build control-panel\build --config Release
-```
-
-Run the control panel from the repo root:
-
-```powershell
-& "control-panel\build\Release\Fusor Control Panel.exe"
-```
-
-See `control-panel/README.md` for OpenCV setup, camera streaming, sensor logging, and
-playback usage.
+➡️ **Follow [control-panel/README.md](control-panel/README.md) top to bottom.** It takes you through installing the build tools, installing OpenCV, building, and running, in order.
 
 ### Firmware
 
-Each firmware project is built with PlatformIO from its own directory:
+The firmware runs on three Seeed XIAO microcontrollers that talk to the control panel over BLE.
+
+**1. Install the toolchain**
+
+- **Python 3** — install from https://www.python.org/ with "Add Python to PATH" checked.
+- **PlatformIO Core** — install with pip, then confirm it is on `PATH`:
+  ```powershell
+  pip install platformio
+  pio --version
+  ```
+- **USB drivers for the Seeed XIAO boards** — usually automatic on Windows 10+. Install a driver manually only if a plugged-in board never shows up.
+
+**2. Build and flash each board**
+
+Each board is built from its own directory. The three commands are the same every time: `pio run` compiles, `pio run -t upload` flashes the board over USB, and `pio device monitor` opens the serial console.
 
 ```powershell
 cd meter-readouts\firmware
@@ -125,27 +90,13 @@ pio run -t upload
 pio device monitor
 ```
 
-Module-specific firmware behavior and BLE payloads are documented in:
+**3. Reference**
 
-- `meter-readouts/firmware/README.md`
-- `pressure-gauge-readout/README.md`
-- `pressure-gauge-readout/firmware/README.md`
-- `valve-control/firmware/README.md`
+Per-board behavior and BLE payloads are documented in:
 
-## Common Setup Issues
-
-- `cmake` is not recognized: install CMake `3.21` or newer and make sure it is
-  added to `PATH`.
-- CMake cannot find a C++ compiler: install Visual Studio 2022 Build Tools with
-  the **Desktop development with C++** workload.
-- CMake cannot find OpenCV: find `OpenCVConfig.cmake`, then pass the containing
-  folder as `-DOpenCV_DIR="<that-folder>"`.
-- The control panel starts but reports missing OpenCV DLLs: add the matching
-  OpenCV `bin` folder to `PATH` in the same PowerShell session.
-- `pio` is not recognized: install PlatformIO Core with
-  `python -m pip install --upgrade platformio`, then reopen the terminal.
-- PlatformIO cannot find the board or serial port: confirm the XIAO is connected
-  over USB and visible to Windows before running `pio run -t upload`.
+- [meter-readouts/firmware/README.md](meter-readouts/firmware/README.md)
+- [pressure-gauge-readout/README.md](pressure-gauge-readout/README.md) and [pressure-gauge-readout/firmware/README.md](pressure-gauge-readout/firmware/README.md)
+- [valve-control/firmware/README.md](valve-control/firmware/README.md)
 
 ## BLE Devices
 
