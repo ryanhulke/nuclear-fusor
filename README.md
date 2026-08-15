@@ -53,7 +53,7 @@ Everything below assumes **PowerShell, run from the repo root**. Both toolchains
 
 The control panel is a native OpenGL desktop app for the live readouts, valve control, camera, sensor logging, and playback. Its setup has a few steps that are easy to get wrong (installing the C++ build tools, pointing CMake at OpenCV, and adding OpenCV's DLLs to `PATH` before running), so it is documented in one place rather than split across files:
 
-➡️ **Follow [control-panel/README.md](control-panel/README.md) top to bottom.** It takes you through installing the build tools, installing OpenCV, building, and running, in order.
+**Follow [control-panel/README.md](control-panel/README.md) top to bottom.** It takes you through installing the build tools, installing OpenCV, building, and running, in order.
 
 ### Firmware
 
